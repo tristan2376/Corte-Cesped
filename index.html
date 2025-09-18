@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Seguimiento - Convenio 135 de 2025</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="header-title">Sistema de Seguimiento y Control</h1>
+                <div class="header-info">
+                    <span class="convenio">Convenio 135 de 2025</span>
+                    <span class="entidad">EMAB S.A E.S.P.</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+        <div class="container">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="dashboard">
+                    <span class="tab-icon">🎯</span>
+                    Dashboard Ejecutivo
+                </button>
+                <button class="tab-btn" data-tab="reportar">
+                    <span class="tab-icon">👷</span>
+                    Reportar Trabajo
+                </button>
+                <button class="tab-btn" data-tab="reportes">
+                    <span class="tab-icon">📋</span>
+                    Reportes
+                </button>
+                <button class="tab-btn" data-tab="kpis">
+                    <span class="tab-icon">📊</span>
+                    Indicadores KPI
+                </button>
+                <button class="tab-btn" data-tab="plan">
+                    <span class="tab-icon">📋</span>
+                    Plan de Cumplimiento
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <h2>Dashboard Ejecutivo</h2>
+                
+                <!-- Resumen Diario -->
+                <div class="dashboard-summary">
+                    <h3>Resumen de Hoy</h3>
+                    <div class="summary-cards">
+                        <div class="summary-card">
+                            <div class="card-icon">👷</div>
+                            <div class="card-info">
+                                <h4>Cuadrillas Registradas</h4>
+                                <span class="card-value" id="cuadrillasHoy">0/12</span>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="card-icon">📐</div>
+                            <div class="card-info">
+                                <h4>Área Cortada</h4>
+                                <span class="card-value" id="areaHoy">0 m²</span>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="card-icon">⏰</div>
+                            <div class="card-info">
+                                <h4>Horas Empleadas</h4>
+                                <span class="card-value" id="horasHoy">0 h</span>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="card-icon">⛽</div>
+                            <div class="card-info">
+                                <h4>Combustible Usado</h4>
+                                <span class="card-value" id="combustibleHoy">0 L</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Indicadores Acumulados -->
+                <div class="dashboard-cumulative">
+                    <h3>Indicadores Acumulados</h3>
+                    <div class="cumulative-cards">
+                        <div class="cumulative-card">
+                            <h4>Área Total</h4>
+                            <span class="cumulative-value" id="areaTotal">0 m²</span>
+                        </div>
+                        <div class="cumulative-card">
+                            <h4>Combustible Total</h4>
+                            <span class="cumulative-value" id="combustibleTotal">0 L</span>
+                        </div>
+                        <div class="cumulative-card">
+                            <h4>Horas Totales</h4>
+                            <span class="cumulative-value" id="horasTotal">0 h</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráficos -->
+                <div class="dashboard-charts">
+                    <div class="chart-container" style="position: relative; height: 400px;">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Semáforos KPI -->
+                <div class="kpi-traffic-lights">
+                    <h3>Estado de KPIs</h3>
+                    <div class="traffic-lights-grid" id="trafficLights">
+                        <!-- Los semáforos se generarán dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Trabajos Registrados Hoy -->
+                <div class="today-reports">
+                    <h3>Trabajos Registrados Hoy</h3>
+                    <div class="today-reports-grid" id="todayReportsGrid">
+                        <!-- Las tarjetas se mostrarán aquí -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reportar Trabajo Tab -->
+            <div id="reportar" class="tab-content">
+                <h2>Reportar Trabajo</h2>
+                
+                <!-- Indicador de Modo Edición -->
+                <div id="editModeIndicator" class="edit-mode-indicator" style="display: none;">
+                    <span class="edit-icon">✏️</span>
+                    <span id="editModeText">Modo Edición Activado</span>
+                </div>
+                
+                <form id="cuadrillaForm" class="cuadrilla-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="fecha">Fecha</label>
+                            <input type="date" id="fecha" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="nombreCuadrilla">Nombre de Cuadrilla</label>
+                            <input type="text" id="nombreCuadrilla" class="form-control" required placeholder="Ej: Cuadrilla Alpha">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="sitioIntervenido">Sitio Intervenido</label>
+                            <input type="text" id="sitioIntervenido" class="form-control" required placeholder="Ej: Parque García Rovira">
+                        </div>
+                    </div>
+
+                    <h3>Personal por Cargo</h3>
+                    <div class="personal-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="guadanadores">Guadañadores (1-12+)</label>
+                            <input type="number" id="guadanadores" class="form-control" min="1" max="24" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="ayudantes">Ayudantes (1-24+)</label>
+                            <input type="number" id="ayudantes" class="form-control" min="1" max="48" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="tecnicoSST">Técnico SST (1)</label>
+                            <input type="number" id="tecnicoSST" class="form-control" min="1" max="1" value="1" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="profesionalSST">Profesional SST (1)</label>
+                            <input type="number" id="profesionalSST" class="form-control" min="1" max="1" value="1" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="supervisor">Supervisor (1)</label>
+                            <input type="number" id="supervisor" class="form-control" min="1" max="1" value="1" readonly>
+                        </div>
+                    </div>
+
+                    <h3>Resultados</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="areaIntervenida">Área Intervenida (m²)</label>
+                            <input type="number" step="0.01" id="areaIntervenida" class="form-control" required placeholder="Meta: 1200 m² por cuadrilla">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="horasEmpleadas">Horas Empleadas</label>
+                            <input type="number" step="0.1" id="horasEmpleadas" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="combustibleUsado">Combustible Usado (L)</label>
+                            <input type="number" step="0.1" id="combustibleUsado" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="observaciones">Observaciones</label>
+                        <textarea id="observaciones" class="form-control" rows="3" placeholder="Describa cualquier observación relevante del trabajo realizado..."></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn--primary" id="submitBtn">
+                            <span class="btn-icon">👷</span>
+                            Registrar Trabajo
+                        </button>
+                        <button type="button" class="btn btn--secondary" id="cancelEdit" style="display: none;">
+                            <span class="btn-icon">❌</span>
+                            Cancelar Edición
+                        </button>
+                        <button type="button" class="btn btn--outline" id="exportDayBtn">
+                            <span class="btn-icon">📤</span>
+                            Exportar del Día
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Lista de Reportes del Día -->
+                <div class="daily-reports">
+                    <h3>Trabajos Registrados Hoy</h3>
+                    <div class="reports-table-container">
+                        <table class="reports-table" id="dailyReportsTable">
+                            <thead>
+                                <tr>
+                                    <th>Cuadrilla</th>
+                                    <th>Sitio</th>
+                                    <th>Área (m²)</th>
+                                    <th>Horas</th>
+                                    <th>Combustible (L)</th>
+                                    <th>Personal</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dailyReportsBody">
+                                <!-- Los reportes se mostrarán aquí -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reportes Tab -->
+            <div id="reportes" class="tab-content">
+                <h2>Reportes Históricos</h2>
+                
+                <div class="reports-controls">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="tipoReporte">Tipo de Reporte</label>
+                            <select id="tipoReporte" class="form-control">
+                                <option value="diario">Diario</option>
+                                <option value="semanal">Semanal</option>
+                                <option value="mensual">Mensual</option>
+                                <option value="cuadrilla">Por Cuadrilla</option>
+                                <option value="total">Total Ejecutado</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="fechaDesde">Desde</label>
+                            <input type="date" id="fechaDesde" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="fechaHasta">Hasta</label>
+                            <input type="date" id="fechaHasta" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <button type="button" class="btn btn--primary" id="generarReporte">Generar Reporte</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumen Estadístico -->
+                <div class="report-summary" id="reportSummary" style="display: none;">
+                    <h3>Resumen del Período</h3>
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Total Cuadrillas:</span>
+                            <span class="stat-value" id="totalCuadrillas">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Área Total:</span>
+                            <span class="stat-value" id="areaTotalReporte">0 m²</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Horas Total:</span>
+                            <span class="stat-value" id="horasTotalReporte">0 h</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Combustible Total:</span>
+                            <span class="stat-value" id="combustibleTotalReporte">0 L</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Reportes -->
+                <div class="reports-table-container">
+                    <table class="reports-table" id="reportsTable">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Cuadrilla</th>
+                                <th>Sitio</th>
+                                <th>Área (m²)</th>
+                                <th>Horas</th>
+                                <th>Combustible (L)</th>
+                                <th>Personal</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsTableBody">
+                            <!-- Los reportes se mostrarán aquí -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="report-actions">
+                    <button type="button" class="btn btn--outline" id="exportReportBtn">Exportar a CSV</button>
+                </div>
+            </div>
+
+            <!-- KPIs Tab -->
+            <div id="kpis" class="tab-content">
+                <h2>Indicadores KPI</h2>
+                
+                <div class="kpi-controls">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="kpiDesde">Período Desde</label>
+                            <input type="date" id="kpiDesde" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="kpiHasta">Período Hasta</label>
+                            <input type="date" id="kpiHasta" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <button type="button" class="btn btn--primary" id="calcularKPIs">Calcular KPIs</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPIs por Categoría -->
+                <div class="kpis-container" id="kpisContainer">
+                    <!-- Los KPIs se generarán dinámicamente -->
+                </div>
+
+                <!-- Gráficos de KPIs -->
+                <div class="kpi-charts">
+                    <div class="chart-container" style="position: relative; height: 400px;">
+                        <canvas id="kpiChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plan de Cumplimiento Tab -->
+            <div id="plan" class="tab-content">
+                <h2>Plan de Cumplimiento</h2>
+                
+                <div class="plan-actions">
+                    <button type="button" class="btn btn--outline" id="downloadPlanBtn">Descargar Plan Completo (PDF)</button>
+                </div>
+
+                <div class="plan-sections">
+                    <div class="plan-section">
+                        <button class="plan-section-header" data-section="info-general">
+                            <span>📋</span>
+                            Información General del Contrato
+                            <span class="expand-icon">▼</span>
+                        </button>
+                        <div class="plan-section-content" id="info-general">
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <strong>Contratista:</strong>
+                                    <p>Consorcio Embellecimiento BGA</p>
+                                </div>
+                                <div class="info-item">
+                                    <strong>Contratante:</strong>
+                                    <p>EMAB S.A E.S.P.</p>
+                                </div>
+                                <div class="info-item">
+                                    <strong>Objeto:</strong>
+                                    <p>PRESTAR SERVICIOS DE COLABORACIÓN OPERATIVA PARA LA LIMPIEZA, MANTENIMIENTO Y EMBELLECIMIENTO DE PARQUES Y ZONAS VERDES EN EL ESPACIO PÚBLICO DE BUCARAMANGA, SANTANDER</p>
+                                </div>
+                                <div class="info-item">
+                                    <strong>Convenio:</strong>
+                                    <p>135 de 2025</p>
+                                </div>
+                                <div class="info-item">
+                                    <strong>Valor:</strong>
+                                    <p>$5,219,151,487.53</p>
+                                </div>
+                                <div class="info-item">
+                                    <strong>Plazo:</strong>
+                                    <p>4 meses y 15 días</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="plan-section">
+                        <button class="plan-section-header" data-section="estructura-cuadrillas">
+                            <span>👷</span>
+                            Estructura de Cuadrillas
+                            <span class="expand-icon">▼</span>
+                        </button>
+                        <div class="plan-section-content" id="estructura-cuadrillas">
+                            <div class="crew-structure">
+                                <div class="crew-role">
+                                    <h4>Guadañador o Guadañadores (1-12+)</h4>
+                                    <p>Operación directa de equipos de corte</p>
+                                </div>
+                                <div class="crew-role">
+                                    <h4>Ayudantes (1-24+)</h4>
+                                    <p>Apoyo operativo y recolección</p>
+                                </div>
+                                <div class="crew-role">
+                                    <h4>Técnico SST (1)</h4>
+                                    <p>Seguridad y salud en el trabajo</p>
+                                </div>
+                                <div class="crew-role">
+                                    <h4>Profesional SST (1)</h4>
+                                    <p>Supervisión de seguridad</p>
+                                </div>
+                                <div class="crew-role">
+                                    <h4>Supervisor (1)</h4>
+                                    <p>Coordinación y control de calidad</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="plan-section">
+                        <button class="plan-section-header" data-section="kpis-metas">
+                            <span>📊</span>
+                            KPIs y Metas
+                            <span class="expand-icon">▼</span>
+                        </button>
+                        <div class="plan-section-content" id="kpis-metas">
+                            <div class="kpi-goals">
+                                <div class="kpi-goal">
+                                    <h4>Productividad ideal por cuadrilla</h4>
+                                    <p>1,200 m² por cuadrilla</p>
+                                </div>
+                                <div class="kpi-goal">
+                                    <h4>Eficiencia de Combustible</h4>
+                                    <p>300 m²/litro</p>
+                                </div>
+                                <div class="kpi-goal">
+                                    <h4>Cumplimiento de Cronograma</h4>
+                                    <p>95% mínimo</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <p>Convenio 135 de 2025 - Alcaldía de Bucaramanga</p>
+                    <p>Sistema de Seguimiento y Control - Consorcio Embellecimiento BGA</p>
+                </div>
+                <div class="footer-contact">
+                    <p>EMAB S.A E.S.P. - Empresa de Aseo de Bucaramanga</p>
+                    <p>Valor: $5,219,151,487.53</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notifications -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🗑️ Confirmar Eliminación</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">¿Está seguro que desea eliminar este reporte? Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn--secondary" id="cancelDelete">Cancelar</button>
+                <button type="button" class="btn btn--primary" id="confirmDelete">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
